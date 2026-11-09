@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제우스 보스 알람 · 포세이돈2</title>
+<style>
+  :root{
+    --bg:#0f0e0c; --panel:#1a1814; --panel2:#221f1a; --line:#3a332a;
+    --gold:#d8b46a; --gold2:#f1d79a; --text:#ece6da; --dim:#9a917f;
+    --red:#e2574c; --green:#6fbf73; --blue:#6aa5d8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;font-size:15px}
+  header{position:sticky;top:0;z-index:5;background:linear-gradient(#17140f,#121009);border-bottom:1px solid var(--line);padding:14px 16px}
+  .hrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:980px;margin:0 auto}
+  h1{font-size:18px;margin:0;color:var(--gold2);letter-spacing:.5px;flex:1;min-width:200px}
+  h1 small{display:block;font-size:12px;color:var(--dim);font-weight:400;margin-top:2px}
+  .clock{font-variant-numeric:tabular-nums;color:var(--gold);font-size:20px;font-weight:600}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:7px 12px}
+  button:hover{border-color:var(--gold)}
+  button.primary{background:var(--gold);color:#1a1408;border-color:var(--gold);font-weight:700}
+  button.warn{border-color:#6b2d28;color:#f2b0aa}
+  button.small{padding:4px 9px;font-size:13px}
+  input,select{font:inherit;background:#0c0b09;color:var(--text);border:1px solid var(--line);border-radius:6px;padding:5px 7px}
+  input[type=number]{width:58px}
+  main{max-width:980px;margin:0 auto;padding:16px}
+  .banner{border:1px solid #6b5a33;background:#2a2213;border-radius:10px;padding:10px 14px;margin-bottom:14px;color:var(--gold2);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .banner.ok{border-color:#2f5a33;background:#14231a;color:#bfe5c1}
+  .settings{display:flex;gap:14px;flex-wrap:wrap;align-items:center;color:var(--dim);font-size:13px;margin-bottom:14px}
+  h2{font-size:14px;color:var(--gold);margin:22px 0 8px;font-weight:600;letter-spacing:.5px}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center}
+  .card.soon{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+  .card.ringing{border-color:var(--red);animation:pulse 1s infinite}
+  .card.up{border-color:#2f5a33}
+  @keyframes pulse{50%{background:#3a1714}}
+  .name{font-weight:700;font-size:16px}
+  .lv{color:var(--gold);font-size:13px;margin-right:6px;font-weight:600}
+  .loc{color:var(--dim);font-size:13px;margin-top:2px}
+  .cd{text-align:right;font-variant-numeric:tabular-nums}
+  .cd .big{font-size:22px;font-weight:700}
+  .cd .at{color:var(--dim);font-size:12px}
+  .cd .tag{font-size:11px;padding:1px 6px;border-radius:9px;border:1px solid var(--line);color:var(--dim);margin-left:4px}
+  .row2{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--dim);border-top:1px dashed var(--line);padding-top:8px}
+  .row2 .sp{flex:1}
+  .soonc{color:var(--gold2)} .upc{color:var(--green)} .ringc{color:var(--red)}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+  .modal.show{display:flex}
+  .box{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:18px;max-width:420px;width:100%}
+  .box h3{margin:0 0 12px;color:var(--gold2)}
+  .box label{display:block;font-size:13px;color:var(--dim);margin:10px 0 4px}
+  .box .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  .ringbox{border-color:var(--red);text-align:center}
+  .ringbox .who{font-size:20px;font-weight:700;margin:6px 0 14px;line-height:1.5}
+  .note{color:var(--dim);font-size:12px;line-height:1.6;margin-top:28px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>⚔️ 제우스 보스 알람<small>포세이돈 2서버 · 출현 전 알림</small></h1>
+    <div class="clock" id="clock">--:--:--</div>
+    <button class="primary" id="armBtn">🔔 알람 켜기</button>
+  </div>
+</header>
+<main>
+  <div class="banner" id="armBanner">🔇 브라우저 정책상 소리를 내려면 먼저 <b>‘알람 켜기’</b>를 한 번 눌러야 해요. 이 페이지는 열어 둔 동안에만 울려요.</div>
+  <div class="settings">
+    <label>알림 시점 <input type="number" id="lead" min="1" max="30" value="3"> 분 전</label>
+    <label>알람 방식 <select id="mode"><option value="both">🔊📳 소리 + 진동</option><option value="sound">🔊 소리만</option><option value="vibe">📳 진동만</option></select></label>
+    <label>반복 <select id="repeat"><option value="1">확인할 때까지</option><option value="0">한 번만</option></select></label>
+    <button class="small" id="testBtn">🔔 알람 테스트</button>
+    <span id="vibeWarn" style="display:none;color:#f2b0aa">⚠️ 이 기기/브라우저는 진동을 지원하지 않아요 (아이폰 등)</span>
+    <button class="small" id="addBtn">＋ 보스 추가</button>
+    <button class="small warn" id="resetBtn">초기화</button>
+  </div>
+
+  <h2>필드 보스 (리스폰)</h2>
+  <div class="list" id="fieldList"></div>
+
+  <h2>요일 고정 보스</h2>
+  <div class="list" id="weeklyList"></div>
+
+  <p class="note">
+    · <b>처치함</b>: 지금 시각 + 리스폰 주기로 다음 출현 시간을 다시 잡아요.<br>
+    · <b>시간 입력</b>: 게임 현황판의 “○시간 ○분 후 출현”을 그대로 넣으면 가장 정확해요.<br>
+    · 리스폰 주기를 넣어 두면 출현 시간이 지나도 다음 회차를 자동으로 예상해서 계속 알려줘요(‘예상’ 표시). 리스폰이 사냥 시점 기준이라 조금씩 밀릴 수 있으니, 가끔 현황판 시간으로 맞춰 주세요.<br>
+    · <b>앱으로 쓰는 경우</b>: 앞으로 48시간 안의 알람이 휴대폰에 예약돼요. 리스폰 보스는 이틀에 한 번쯤 앱을 열어 주면 계속 이어서 예약돼요.<br>
+    · 입력한 내용은 이 브라우저에 저장돼요. 휴대폰에서는 화면이 꺼지거나 다른 앱으로 가면 알람이 늦거나 안 울릴 수 있어요. PC에서 탭을 열어 두는 걸 추천해요.
+  </p>
+</main>
+
+<div class="modal" id="editModal"><div class="box">
+  <h3 id="editTitle">시간 맞추기</h3>
+  <div id="editNameWrap">
+    <label>보스 이름</label><input id="eName" style="width:100%">
+    <label>레벨 / 위치</label>
+    <div style="display:flex;gap:6px"><input id="eLv" placeholder="Lv" style="width:70px"><input id="eLoc" placeholder="지역 · 사냥터" style="flex:1"></div>
+  </div>
+  <label>다음 출현까지 남은 시간 (비우면 그대로)</label>
+  <div><input type="number" id="eH" min="0" placeholder="0"> 시간 <input type="number" id="eM" min="0" max="59" placeholder="0"> 분</div>
+  <label>리스폰 주기 (모르면 비워 두세요)</label>
+  <div><input type="number" id="eRH" min="0" placeholder="0"> 시간 <input type="number" id="eRM" min="0" max="59" placeholder="0"> 분</div>
+  <div class="btns">
+    <button class="warn" id="eDel">삭제</button>
+    <span style="flex:1"></span>
+    <button id="eCancel">취소</button>
+    <button class="primary" id="eSave">저장</button>
+  </div>
+</div></div>
+
+<div class="modal" id="ringModal"><div class="box ringbox">
+  <h3>⏰ 보스 출현 임박!</h3>
+  <div class="who" id="ringWho"></div>
+  <button class="primary" id="ringOk" style="width:100%;padding:12px">확인</button>
+</div></div>
+
+<script>
+(function(){
+const KEY='zeusBossAlarm.v1';
+const APP=!!(window.Android&&window.Android.sync);
+const MIN=60000, HOUR=3600000;
+const T=(s)=>new Date(s).getTime();
+
+// 기본값: 2026-11-06 21:56 KST 현황판 기준
+const DEFAULT={
+  lead:3, repeat:1, mode:'both',
+  field:[
+    {id:'f1',name:'이오칸토스',lv:45,loc:'테살리아 · 아르보리아스 폐허',next:T('2026-11-06T23:53:00+09:00'),resp:0},
+    {id:'f2',name:'키니 러우리',lv:45,loc:'테살리아 · 금지된 숲',next:T('2026-11-06T23:58:00+09:00'),resp:0},
+    {id:'f3',name:'크리소파고스',lv:35,loc:'테살리아 · 테살리아 평원',next:T('2026-11-07T00:50:00+09:00'),resp:0},
+    {id:'f4',name:'아모르포스',lv:35,loc:'테살리아 · 침식된 경작지',next:T('2026-11-07T00:53:00+09:00'),resp:0},
+    {id:'f5',name:'트라손',lv:40,loc:'테살리아 · 고대 신전 유적지',next:T('2026-11-07T00:55:00+09:00'),resp:0},
+    {id:'f6',name:'알라스토르',lv:55,loc:'자하브 · 무법자의 길목',next:T('2026-11-07T00:56:00+09:00'),resp:0},
+    {id:'f7',name:'베딕스',lv:60,loc:'자하브 · 공헌의 제단',next:T('2026-11-07T00:58:00+09:00'),resp:0},
+    {id:'f8',name:'고트시스',lv:60,loc:'자하브 · 황금 리라 부락',next:T('2026-11-07T01:02:00+09:00'),resp:0},
+    {id:'f9',name:'거인의 세번째 손',lv:70,loc:'자하브 · 유적지 폐허',next:T('2026-11-07T08:30:00+09:00'),resp:0},
+    {id:'f10',name:'트리포크',lv:65,loc:'자하브 · 가시 덤불 지대',next:T('2026-11-07T08:34:00+09:00'),resp:0}
+  ],
+  weekly:[
+    {id:'w1',name:'메데이아',lv:'',loc:'인터서버',dow:2,h:21,m:0,on:true},
+    {id:'w2',name:'아라크네',lv:50,loc:'테살리아',dow:3,h:21,m:0,on:true},
+    {id:'w3',name:'아르고스',lv:65,loc:'자하브',dow:4,h:21,m:0,on:true},
+    {id:'w4',name:'키메라',lv:'',loc:'인터서버 타르타로스 4계',dow:6,h:21,m:0,on:true}
+  ],
+  fired:{}
+};
+
+let S;
+function load(){
+  try{const r=localStorage.getItem(KEY); if(r){S=JSON.parse(r);}}catch(e){}
+  if(!S||!S.field) S=JSON.parse(JSON.stringify(DEFAULT));
+  S.fired=S.fired||{};
+  S.mode=S.mode||'both';
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} if(APP) syncSoon();}
+load();
+
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const DOW='일월화수목금토';
+function fmtClock(t){const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes());}
+function fmtAt(t){const d=new Date(t),n=new Date();
+  const same=d.toDateString()===n.toDateString();
+  const tm=new Date(n);tm.setDate(n.getDate()+1);
+  const pre=same?'오늘':(d.toDateString()===tm.toDateString()?'내일':(d.getMonth()+1)+'/'+d.getDate()+'('+DOW[d.getDay()]+')');
+  return pre+' '+fmtClock(t);}
+function fmtLeft(ms){
+  if(ms<0)ms=0; const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;
+  return h>0? h+'시간 '+pad(m)+'분' : m+'분 '+pad(sec)+'초';}
+
+// 필드 보스: 주기가 있으면 지난 출현을 다음 회차로 굴림
+function fieldNext(b,now){
+  if(!b.next) return {t:null,est:false};
+  let t=b.next, est=!!b.est;
+  if(b.resp>0 && now>t+5*MIN){
+    const k=Math.ceil((now-5*MIN-t)/b.resp); t+=k*b.resp; est=true;
+  }
+  return {t,est};
+}
+function weeklyNext(w,now){
+  const d=new Date(now); d.setHours(w.h,w.m,0,0);
+  let add=(w.dow-d.getDay()+7)%7; d.setDate(d.getDate()+add);
+  if(d.getTime()+5*MIN<now) d.setDate(d.getDate()+7);
+  return d.getTime();
+}
+
+// ===== 소리 =====
+let ctx=null, armed=false, ringTimer=null, ringing=[];
+function beep(){
+  if(!ctx) return;
+  const t0=ctx.currentTime;
+  [0,0.18,0.36].forEach((o,i)=>{
+    const os=ctx.createOscillator(),g=ctx.createGain();
+    os.type='square'; os.frequency.value=i===2?1320:880;
+    g.gain.setValueAtTime(0.0001,t0+o); g.gain.exponentialRampToValueAtTime(0.25,t0+o+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+o+0.15);
+    os.connect(g).connect(ctx.destination); os.start(t0+o); os.stop(t0+o+0.16);
+  });
+}
+function arm(){
+  if(APP){ armed=true; $('armBtn').style.display='none'; $('armBanner').className='banner ok';
+    $('armBanner').innerHTML='📱 앱 알람 사용 중 — 앱을 닫거나 화면이 꺼져도 출현 '+S.lead+'분 전에 '+modeText()+'(으)로 알려줘요.'; return; }
+  try{ ctx=ctx||new (window.AudioContext||window.webkitAudioContext)(); ctx.resume(); }catch(e){}
+  armed=true;
+  try{ if('Notification' in window && Notification.permission==='default') Notification.requestPermission().catch(()=>{}); }catch(e){}
+  $('armBtn').textContent='🔔 알람 켜짐'; $('armBtn').classList.remove('primary');
+  $('armBanner').className='banner ok';
+  $('armBanner').innerHTML='🔔 알람이 켜져 있어요. 이 탭을 열어 두면 출현 '+S.lead+'분 전에 '+modeText()+'(으)로 알려줘요.';
+}
+$('armBtn').onclick=arm;
+const canVibe=APP||!!navigator.vibrate;
+function vibe(){ try{ canVibe&&navigator.vibrate([400,150,400,150,400]); }catch(e){} }
+function alertOnce(){ if(S.mode!=='vibe') beep(); if(S.mode!=='sound') vibe(); }
+function modeText(){ return {both:'소리와 진동',sound:'소리',vibe:'진동'}[S.mode]; }
+function updVibeWarn(){ $('vibeWarn').style.display=(S.mode!=='sound'&&!canVibe)?'':'none'; }
+$('testBtn').onclick=()=>{ if(APP){ try{Android.test(S.mode,+S.repeat);}catch(e){} return; } if(!armed) arm(); alertOnce(); };
+
+function startRing(label){
+  ringing.push(label);
+  $('ringWho').innerHTML=ringing.join('<br>');
+  $('ringModal').classList.add('show');
+  try{ if('Notification' in window && Notification.permission==='granted') new Notification('⚔️ 보스 출현 임박',{body:label}); }catch(e){}
+  alertOnce();
+  if(ringTimer) clearInterval(ringTimer);
+  if(+S.repeat) ringTimer=setInterval(alertOnce,S.mode==='sound'?1500:2500);
+}
+function stopRing(){ ringing=[]; if(ringTimer){clearInterval(ringTimer);ringTimer=null;} try{ canVibe&&navigator.vibrate(0); }catch(e){} $('ringModal').classList.remove('show'); document.title=baseTitle; }
+$('ringOk').onclick=stopRing;
+const baseTitle=document.title;
+
+// ===== 렌더 =====
+function render(){
+  const now=Date.now(), lead=S.lead*MIN;
+  const items=S.field.map(b=>{const r=fieldNext(b,now);return {b,...r};})
+    .sort((a,b)=>(a.t??Infinity)-(b.t??Infinity));
+  $('fieldList').innerHTML=items.map(({b,t,est})=>{
+    let cls='',big='시간 미입력',sub='',c='';
+    if(t){ const left=t-now;
+      if(left<=0){cls='up';c='upc';big='출현 중';sub=fmtAt(t)+' 출현';}
+      else{ big=fmtLeft(left); sub=fmtAt(t)+' 출현'; if(left<=lead){cls='soon';c='soonc';} }
+    }
+    const resp=b.resp>0? '리스폰 '+(b.resp>=HOUR?Math.floor(b.resp/HOUR)+'시간 ':'')+(b.resp%HOUR? Math.round(b.resp%HOUR/MIN)+'분':'') : '리스폰 주기 미입력';
+    return `<div class="card ${cls}">
+      <div><div class="name"><span class="lv">${b.lv?'Lv.'+b.lv:''}</span>${esc(b.name)}</div><div class="loc">${esc(b.loc||'')}</div></div>
+      <div class="cd"><div class="big ${c}">${big}</div><div class="at">${sub}${est&&t?'<span class="tag">예상</span>':''}</div></div>
+      <div class="row2"><span class="sp">${resp}</span>
+        <button class="small" data-kill="${b.id}" ${b.resp>0?'':'title="리스폰 주기를 먼저 입력하세요"'}>⚔️ 처치함</button>
+        <button class="small" data-edit="${b.id}">⏱ 시간 입력</button></div>
+    </div>`;}).join('');
+  const ws=S.weekly.map(w=>({w,t:weeklyNext(w,now)})).sort((a,b)=>a.t-b.t);
+  $('weeklyList').innerHTML=ws.map(({w,t})=>{
+    const left=t-now; let cls='',c='',big=fmtLeft(left);
+    if(left<=0){cls='up';c='upc';big='출현 중';} else if(left<=lead){cls='soon';c='soonc';}
+    return `<div class="card ${cls}">
+      <div><div class="name"><span class="lv">${w.lv?'Lv.'+w.lv:''}</span>${esc(w.name)}</div><div class="loc">${esc(w.loc)} · 매주 ${DOW[w.dow]}요일 ${pad(w.h)}:${pad(w.m)}</div></div>
+      <div class="cd"><div class="big ${c}">${w.on?big:'알람 꺼짐'}</div><div class="at">${fmtAt(t)} 출현</div></div>
+      <div class="row2"><span class="sp"></span><label><input type="checkbox" data-won="${w.id}" ${w.on?'checked':''}> 알람</label></div>
+    </div>`;}).join('');
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+// ===== 알람 체크 =====
+function check(){
+  const now=Date.now(), lead=S.lead*MIN, due=[];
+  S.field.forEach(b=>{const {t}=fieldNext(b,now); if(!t) return;
+    const key=b.id+'@'+t; if(S.fired[key]) return;
+    if(now>=t-lead && now<t+MIN){ S.fired[key]=1; due.push(`${b.name} — ${fmtClock(t)} 출현`); }
+    else if(now>=t+MIN) S.fired[key]=1;
+  });
+  S.weekly.forEach(w=>{ if(!w.on) return; const t=weeklyNext(w,now); const key=w.id+'@'+t; if(S.fired[key]) return;
+    if(now>=t-lead && now<t+MIN){ S.fired[key]=1; due.push(`${w.name} — ${fmtClock(t)} 출현`); }
+  });
+  // 오래된 기록 정리
+  for(const k in S.fired){ const t=+k.split('@')[1]; if(t<now-2*86400000) delete S.fired[k]; }
+  if(due.length){ save(); if(!APP) due.forEach(startRing); }
+  if(ringing.length) document.title=(document.title.startsWith('⏰')?'⚔️ ':'⏰ ')+'보스 출현 임박!';
+}
+
+function tick(){ const n=new Date(); $('clock').textContent=pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds()); check(); render(); }
+// 처음 열었을 때 이미 지난 알람은 울리지 않도록 표시
+(function primeFired(){ const now=Date.now(),lead=S.lead*MIN;
+  S.field.forEach(b=>{const {t}=fieldNext(b,now); if(t&&now>t-lead+30000&&!S.fired[b.id+'@'+t]) S.fired[b.id+'@'+t]=now<t+MIN?0:1;});
+})();
+setInterval(tick,1000); tick();
+
+// ===== 이벤트 =====
+document.addEventListener('click',e=>{
+  const k=e.target.closest('[data-kill]'); if(k){ const b=S.field.find(x=>x.id===k.dataset.kill);
+    if(!(b.resp>0)){ openEdit(b.id); return; }
+    b.next=Date.now()+b.resp; b.est=false; save(); render(); return; }
+  const ed=e.target.closest('[data-edit]'); if(ed){ openEdit(ed.dataset.edit); return; }
+});
+document.addEventListener('change',e=>{
+  if(e.target.dataset.won){ const w=S.weekly.find(x=>x.id===e.target.dataset.won); w.on=e.target.checked; save(); render(); }
+});
+$('lead').value=S.lead; $('repeat').value=S.repeat; $('mode').value=S.mode; updVibeWarn();
+$('mode').onchange=()=>{S.mode=$('mode').value; save(); updVibeWarn(); if(armed) arm();};
+
+// ===== 앱(안드로이드) 연동: 앞으로 48시간 안의 알람을 휴대폰에 예약 =====
+function upcoming(){
+  const now=Date.now(), lead=S.lead*MIN, end=now+48*HOUR, out=[];
+  S.field.forEach(b=>{ if(!b.next) return; let t=b.next;
+    if(b.resp>0){
+      if(t-lead<=now){ t+=Math.ceil((now-(t-lead))/b.resp)*b.resp; }
+      for(let i=0;i<30&&t<=end;i++,t+=b.resp){ if(t-lead>now) out.push({at:t-lead,label:b.name+' — '+fmtClock(t)+' 출현'+(i>0||b.est?' (예상)':'')}); }
+    } else if(t-lead>now) out.push({at:t-lead,label:b.name+' — '+fmtClock(t)+' 출현'});
+  });
+  S.weekly.forEach(w=>{ if(!w.on) return; let t=weeklyNext(w,now);
+    for(let i=0;i<2;i++,t+=7*86400000){ if(t-lead>now) out.push({at:t-lead,label:w.name+' — '+fmtClock(t)+' 출현'}); }
+  });
+  out.sort((a,b)=>a.at-b.at);
+  return out.slice(0,90);
+}
+let syncT=null;
+function syncNow(){ if(!APP) return; try{ Android.sync(JSON.stringify(upcoming()),S.mode,+S.repeat); }catch(e){} }
+function syncSoon(){ clearTimeout(syncT); syncT=setTimeout(syncNow,300); }
+if(APP){ arm(); syncNow(); setInterval(syncNow,10*MIN); window.nativeResume=syncNow; }
+$('lead').onchange=()=>{S.lead=Math.max(1,Math.min(30,+$('lead').value||3)); save(); if(armed) arm(); render();};
+$('repeat').onchange=()=>{S.repeat=+$('repeat').value; save();};
+let resetArm=false;
+$('resetBtn').onclick=()=>{ if(!resetArm){resetArm=true;$('resetBtn').textContent='한 번 더 누르면 초기화';setTimeout(()=>{resetArm=false;$('resetBtn').textContent='초기화';},3000);return;}
+  S=JSON.parse(JSON.stringify(DEFAULT)); save(); location.hash=''; render(); $('resetBtn').textContent='초기화'; resetArm=false; };
+
+let editing=null;
+function openEdit(id){
+  editing=id; const b=id?S.field.find(x=>x.id===id):null;
+  $('editTitle').textContent=b?b.name+' 시간 맞추기':'보스 추가';
+  $('eName').value=b?b.name:''; $('eLv').value=b?b.lv:''; $('eLoc').value=b?b.loc:'';
+  $('eH').value='';$('eM').value='';
+  $('eRH').value=b&&b.resp?Math.floor(b.resp/HOUR):''; $('eRM').value=b&&b.resp?Math.round(b.resp%HOUR/MIN):'';
+  $('eDel').style.display=b?'':'none';
+  $('editModal').classList.add('show');
+}
+$('addBtn').onclick=()=>openEdit(null);
+$('eCancel').onclick=()=>$('editModal').classList.remove('show');
+$('eDel').onclick=()=>{ S.field=S.field.filter(x=>x.id!==editing); save(); $('editModal').classList.remove('show'); render(); };
+$('eSave').onclick=()=>{
+  let b=editing?S.field.find(x=>x.id===editing):null;
+  if(!b){ b={id:'f'+Date.now(),name:'',lv:'',loc:'',next:null,resp:0}; S.field.push(b); }
+  b.name=$('eName').value.trim()||b.name||'이름 없는 보스'; b.lv=$('eLv').value.replace(/[^0-9]/g,''); b.loc=$('eLoc').value.trim();
+  const h=$('eH').value, m=$('eM').value;
+  if(h!==''||m!==''){ b.next=Date.now()+(+h||0)*HOUR+(+m||0)*MIN; b.next=Math.round(b.next/MIN)*MIN; b.est=false; }
+  const rh=$('eRH').value, rm=$('eRM').value;
+  if(rh!==''||rm!=='') b.resp=(+rh||0)*HOUR+(+rm||0)*MIN;
+  save(); $('editModal').classList.remove('show'); render();
+};
+})();
+</script>
+</body>
+</html>

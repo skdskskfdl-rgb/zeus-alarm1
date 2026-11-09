@@ -1,0 +1,45 @@
+plugins {
+    id 'com.android.application'
+}
+
+def runNo = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInteger()
+
+android {
+    namespace 'com.zeus.bossalarm'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.zeus.bossalarm"
+        minSdk 26
+        targetSdk 34
+        versionCode runNo
+        versionName "1." + runNo
+    }
+
+    // 항상 같은 키로 서명해야 새 버전을 덮어서 설치(업데이트)할 수 있어요.
+    signingConfigs {
+        release {
+            storeFile file("release.keystore")
+            storePassword "zeusalarm"
+            keyAlias "zeus"
+            keyPassword "zeusalarm"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}
